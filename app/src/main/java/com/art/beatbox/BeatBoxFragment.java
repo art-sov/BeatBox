@@ -7,17 +7,21 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 
 import com.art.beatbox.databinding.FragmentBeatBoxBinding;
 import com.art.beatbox.databinding.ListItemSoundBinding;
 
 import java.util.List;
+import java.util.Objects;
 
 public class BeatBoxFragment extends Fragment {
 
+    private final static String TAG = BeatBoxFragment.class.getName();
     private BeatBox mBeatBox;
 
     public static BeatBoxFragment newInstance(){
@@ -30,17 +34,49 @@ public class BeatBoxFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        mBeatBox = new BeatBox(getActivity());
+        mBeatBox = new BeatBox(Objects.requireNonNull(getActivity()));
 
         FragmentBeatBoxBinding binding = DataBindingUtil.inflate(
                 inflater,
                 R.layout.fragment_beat_box,
                 container,false);
 
+
         binding.recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         binding.recyclerView.setAdapter(new SoundAdapter(mBeatBox.getSounds()));
 
+        binding.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                mBeatBox.setRate(i);
+                Log.i(TAG, "Rate SeekBar: " + i);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
         return binding.getRoot();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mBeatBox.release();
     }
 
     private class SoundHolder extends RecyclerView.ViewHolder {
